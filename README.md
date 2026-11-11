@@ -5,7 +5,7 @@ Este repo trae los agentes de [Sancho CMO](https://app.sanchocmo.ai) (Sancho, Ha
 ## Instalar en la nube (claude.ai/code)
 
 1. Conecta Sancho en tu cuenta de claude.ai (Ajustes → Conectores → Añadir conector personalizado, URL `https://app.sanchocmo.ai/api/mcp/sancho`) e inicia sesión con tu propio usuario de Sancho.
-2. Abre una sesión nueva en [claude.ai/code](https://claude.ai/code) sobre este repo.
+2. Abre una sesión nueva en [claude.ai/code](https://claude.ai/code) sobre este repo. Tiene que ser una sesión normal, no un Proyecto: los hilos de un Proyecto no cargan `.claude/agents/`.
 3. Activa el conector de Sancho en esa sesión.
 
 No hace falta script de instalación ni token: los agentes se cargan solos desde `.claude/agents/` al arrancar la sesión, y cada uno habla con Sancho a través de tu conector. Por eso solo ves los clientes a los que tienes acceso.
