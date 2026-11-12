@@ -79,6 +79,9 @@ def _recoger(agent, phash):
             f = o.get("file")
             if isinstance(f, dict) and f.get("contentBase64") is not None:
                 partes.setdefault(f["path"], {})[int(f.get("offset") or 0)] = f["contentBase64"]
+            elif isinstance(f, dict) and f.get("encoding") == "utf8" and isinstance(f.get("content"), str):
+                # get.agent con encoding=utf8 (SAN-2284): texto legible; offset sigue en bytes.
+                partes.setdefault(f["path"], {})[int(f.get("offset") or 0)] = base64.b64encode(f["content"].encode("utf-8")).decode()
     return manifiesto, partes
 
 

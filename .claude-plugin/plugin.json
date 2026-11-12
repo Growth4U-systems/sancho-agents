@@ -1,6 +1,6 @@
 {
   "name": "sancho-agents",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Los agentes de Sancho CMO (Sancho, Hamete, Dulcinea, Sansón, Rocinante y los demás) como subagentes de Claude Code, con el conector de Sancho.",
   "author": {
     "name": "Growth4U"
