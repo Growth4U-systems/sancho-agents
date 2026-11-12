@@ -19,14 +19,44 @@ HERE = pathlib.Path(__file__).resolve().parent.parent / "agents"
 # Skills que llevan todos los agentes: no dicen nada sobre cuándo delegar.
 COMUNES = {"g4u-session-log", "task-lifecycle", "sancho-start"}
 
-# Herramientas del subagente (SAN-2284). Sin esta lista hereda todas las de la
-# sesión, con cada conector (Gmail, Notion, Slack...), y paga ~30.000-70.000 tokens
-# de contexto fijo en cada turno. Con ella el fijo baja a ~5.000. Sancho se nombra
-# por servidor: cubre el conector de claude.ai (SanchoCMO/Sancho) y el del plugin.
-# Si un agente necesita otro conector, añádelo en EXTRA_TOOLS.
-TOOLS = ["Read", "Write", "Edit", "Bash", "Glob", "Grep", "WebFetch", "WebSearch",
-         "mcp__SanchoCMO", "mcp__Sancho", "mcp__sancho", "mcp__plugin_sancho-agents_sancho"]
-EXTRA_TOOLS: dict[str, list[str]] = {}
+# Herramientas del subagente (SAN-2284). Sin lista hereda todas las de la sesión
+# (Gmail, Notion, Slack...): ~70.000 tokens de contexto fijo. Nombrar el servidor
+# de Sancho entero carga sus 13 herramientas (~12.000). Por eso cada agente lleva
+# solo las de Sancho que cita su definición, por nombre exacto. Sancho tiene
+# varios nombres de servidor según cómo esté conectado (claude.ai o plugin): se
+# declaran todos y Claude Code ignora los que no existan.
+BASE = ["Read", "Write", "Edit", "Bash", "Glob", "Grep"]
+WEB = ["WebFetch", "WebSearch"]
+SERVIDORES = ["mcp__SanchoCMO", "mcp__Sancho", "mcp__sancho", "mcp__plugin_sancho-agents_sancho"]
+# Todas: leer/escribir y sancho_get_operation para el contrato si caduca un hash.
+SANCHO_BASE = ["sancho_read", "sancho_write", "sancho_get_operation"]
+INTEGRACIONES = ["integrations_list_tools", "integrations_read_tool", "integrations_execute_tool"]
+METRICAS = ["sancho_metrics_catalog", "sancho_metrics_query"]
+# Sacado de las menciones en agents/<id>/ de sanchocmo-mcp (12-nov-2026).
+# Si un agente pide una herramienta que no tiene, añádela aquí y regenera.
+POR_AGENTE: dict[str, dict] = {
+    "alarife": {"web": True, "sancho": INTEGRACIONES},
+    "aldonza": {"web": True, "sancho": INTEGRACIONES + METRICAS + ["sancho_ingestion", "sancho_mcp_status"]},
+    "basilio": {"web": True, "sancho": []},
+    "cervantes": {"web": False, "sancho": ["sancho_search_operations"]},
+    "dorotea": {"web": False, "sancho": INTEGRACIONES},
+    "dulcinea": {"web": True, "sancho": METRICAS},
+    "hamete": {"web": True, "sancho": []},
+    "maese-pedro": {"web": True, "sancho": INTEGRACIONES},
+    "mambrino": {"web": True, "sancho": INTEGRACIONES + METRICAS},
+    "merlin": {"web": False, "sancho": METRICAS + ["sancho_search_operations"]},
+    "rocinante": {"web": True, "sancho": INTEGRACIONES + METRICAS + ["sancho_mcp_status"]},
+    "sancho": {"web": True, "sancho": []},
+    "sanson": {"web": False, "sancho": []},
+}
+
+
+def herramientas(aid: str) -> str:
+    cfg = POR_AGENTE.get(aid, {"web": True, "sancho": []})
+    sancho = SANCHO_BASE + cfg["sancho"]
+    mcp = [f"{srv}__{t}" for srv in SERVIDORES for t in sancho]
+    return ", ".join(BASE + (WEB if cfg["web"] else []) + mcp)
+
 
 # contractHash vigente de get.agent. Si Sancho lo cambia, el stub cae al
 # sancho_get_operation y sigue funcionando; regenerar para volver a ahorrarse esa llamada.
@@ -84,7 +114,7 @@ def main() -> None:
             "---\n"
             f"name: {aid}\n"
             f"description: {json.dumps(desc, ensure_ascii=False)}\n"
-            f"tools: {', '.join(TOOLS + EXTRA_TOOLS.get(aid, []))}\n"
+            f"tools: {herramientas(aid)}\n"
             "---\n\n"
             + BODY.format(id=aid, title=title, contract=GET_AGENT_CONTRACT, sync_contract=SYNC_AGENTS_CONTRACT,
                           skill_contract=GET_SKILL_CONTRACT, resource_contract=GET_SKILL_RESOURCE_CONTRACT)
