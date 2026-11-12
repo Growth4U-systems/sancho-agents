@@ -25,12 +25,14 @@ Paquete `sanson` revisión 6, `packageHash 27619785…4b86`, 72 ficheros en el m
 | B. Plugin 1.1.0, caché vacía | 63 s | 5 | 36,9 KB | 37.600 | 735.000 |
 | C. Plugin 1.1.0, caché llena | 39 s | 1 | 22,5 KB | 22.700 | 512.000 |
 | D. 1.2.0 (hash con `sync.agents`), caché llena | 34 s | 1 | 11,3 KB | 16.600 | 488.000 |
+| J. 1.4.0 (herramientas exactas, texto utf8, paquete sin tests), caché vacía | 84 s | 9 (3 reintentos por conexión perdida) | 23,4 KB | 23.100 | 236.000 |
 
 Qué se ve:
 
 - Con caché el arranque pasa de 110 s a 34 s y de 6 llamadas a Sancho a 1. El contexto que añade baja de 39.200 a 16.600 tokens.
 - En 1.1.0 la única llamada en caliente era el manifiesto entero (11,7 KB en Sansón, más en agentes con paquetes grandes) solo para leer el `packageHash`. En 1.2.0 se pide con `sync.agents` y `only`, que devuelve 0,5 KB. El manifiesto solo se pide si hay que descargar.
 - El arranque de Sansón es poco frente a lo medido en la demo (Company Brief 88.600 tokens, HTML de Maese Pedro 356.000, Market Intelligence 276.000). La mayor parte de ese coste está en leer skills y recursos (`get.skill.resource` con texto duplicado y páginas de ~600 bytes) y en los documentos, que son del lado de Sancho.
+- En frío, 1.4.0 (fila J) trae 23,4 KB frente a 36,9 KB de la fila B: el texto llega legible y no se vuelve a leer con Read, y el manifiesto ya no lista tests (65 ficheros frente a 72). Arranca con 12.400 tokens fijos en vez de ~31.000. La entrada procesada baja de 735.000 a 236.000.
 - En la nube la caché dura lo que dura la sesión: el primer arranque de cada agente en una sesión nueva siempre es en frío (fila B).
 
 ## Herramientas del subagente (1.2.0)
