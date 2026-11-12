@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "sancho": {
+      "type": "http",
+      "url": "https://app.sanchocmo.ai/api/mcp/sancho"
+    }
+  }
+}

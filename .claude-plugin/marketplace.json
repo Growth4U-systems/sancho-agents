@@ -1,0 +1,14 @@
+{
+  "name": "sancho-agents",
+  "owner": {
+    "name": "Growth4U"
+  },
+  "description": "Marketplace de Sancho CMO para Claude Code.",
+  "plugins": [
+    {
+      "name": "sancho-agents",
+      "source": "./",
+      "description": "Los agentes de Sancho CMO como subagentes de Claude Code, con el conector de Sancho."
+    }
+  ]
+}

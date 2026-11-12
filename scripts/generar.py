@@ -15,7 +15,7 @@ import json
 import pathlib
 import sys
 
-HERE = pathlib.Path(__file__).resolve().parent.parent / ".claude" / "agents"
+HERE = pathlib.Path(__file__).resolve().parent.parent / "agents"
 # Skills que llevan todos los agentes: no dicen nada sobre cuándo delegar.
 COMUNES = {"g4u-session-log", "task-lifecycle", "sancho-start"}
 
