@@ -126,8 +126,9 @@ def main():
     if not url or not token:
         sys.exit("faltan SANCHO_MCP_URL y SANCHO_MCP_TOKEN en el entorno")
     s = Sancho(url, token)
-    pedidos = sys.argv[1:] or sorted(p.parent.name for p in PAQUETES.glob("*/.sync.json")) or \
-        sorted(p.stem for p in (RAIZ / "agents").glob("*.md"))
+    # Los ya copiados y los que tienen stub: un agente nuevo o aún sin paquete también entra.
+    pedidos = sys.argv[1:] or sorted({p.parent.name for p in PAQUETES.glob("*/.sync.json")} |
+                                     {p.stem for p in (RAIZ / "agents").glob("*.md")})
     cambios = []
     for aid in pedidos:
         vivo = s.leer("sync.agents", {"only": [aid]})["agents"]
