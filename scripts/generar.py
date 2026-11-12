@@ -108,7 +108,7 @@ El resto del paquete está en la carpeta `paquetes/{id}/` del repo sancho-agents
 
 ## Si Sancho dice que tu versión ya no vale
 
-Si al arrancar un run o al usar una skill Sancho responde que el paquete o la publicación cambió (`agent_package_changed_restart`, un 409 o un pin distinto), esta copia está atrasada. Pide el paquete vigente: `sancho_read` con `resource: "paquetes"`, `operationId: "sync.agents"`, `contractHash: "{sync_contract}"` y `arguments: {{"only": ["{id}"]}}` para el `packageHash`; luego `get.agent` (`contractHash: "{contract}"`) con `{{"agentId": "{id}", "format": "portable", "packageHash": "<hash>", "resourcePath": "<ruta>", "encoding": "utf8"}}` para cada fichero que necesites. Avisa en tu respuesta de que hay que sincronizar el repo (`scripts/sincronizar.py`).
+Si al arrancar un run o al usar una skill Sancho responde que el paquete o la publicación cambió (`agent_package_changed_restart`, un 409 o un pin distinto), esta copia está atrasada. Pide el paquete vigente: `sancho_read` con `resource: "paquetes"`, `operationId: "sync.agents"`, `contractHash: "{sync_contract}"` y `arguments: {{"only": ["{id}"]}}` para el `packageHash`; luego `get.agent` (`contractHash: "{contract}"`) con `{{"agentId": "{id}", "format": "portable", "packageHash": "<hash>", "resourcePath": "<ruta>", "encoding": "utf8"}}` para cada fichero que necesites. Sancho actualiza el repo solo en unos minutos.
 
 ## Reglas que no dependen de la definición
 

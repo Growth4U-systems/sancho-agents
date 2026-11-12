@@ -1,0 +1,36 @@
+name: Regenerar stubs desde paquetes
+
+# SAN-2284: Sancho escribe paquetes/<id>/ en main cuando cambia un agente. Este
+# workflow regenera agents/<id>.md con sus ficheros de arranque. No usa secretos.
+on:
+  push:
+    branches: [main]
+    paths: ["paquetes/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: regenerar-stubs
+  cancel-in-progress: false
+
+jobs:
+  stubs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 scripts/generar.py --paquetes
+      - name: Guardar en main
+        run: |
+          if [ -z "$(git status --porcelain agents)" ]; then echo "Stubs al día"; exit 0; fi
+          git config user.name "sancho-agents-stubs"
+          git config user.email "sancho-agents-stubs@users.noreply.github.com"
+          git add agents
+          git commit -m "chore: regenerar stubs desde paquetes (SAN-2284)"
+          git pull --rebase
+          git push
