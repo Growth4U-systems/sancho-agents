@@ -41,4 +41,17 @@ Prueba con Claude Code 2.1.322 y un MCP de prueba: el mismo subagente con todas 
 
 Por eso los stubs declaran `tools:` con lo que usan los agentes: ficheros, Bash, web y los nombres habituales del servidor de Sancho (`SanchoCMO`, `Sancho`, `sancho` y el del plugin). Si un conector de Sancho se llama de otra forma en tu cuenta, añade su nombre en `TOOLS` de `scripts/generar.py`.
 
-Pendiente: repetir el benchmark con los stubs 1.2.0 en una sesión nueva (hay que reiniciar para que cargue los stubs).
+### Tarea real: Sansón, de-slop de un párrafo (12-nov-2026)
+
+Encargo fijo (sin cliente, sin escribir en Sancho): pasar este párrafo por el método de-slop y devolver el párrafo corregido con los cambios.
+
+> «En el dinámico panorama actual de las finanzas, Revolut Business se erige como una solución integral que no solo optimiza la gestión de pagos, sino que también potencia el crecimiento de las empresas. Con su enfoque innovador y centrado en el cliente, desbloquea todo el potencial de los equipos financieros, ofreciendo una experiencia fluida y sin fricciones.»
+
+Las dos con la caché de arranque llena (4 ficheros) y los ficheros del método sin cachear.
+
+| Ejecución | Duración | Llamadas (Sancho) | Contexto al empezar | Contexto final | Entrada procesada |
+| -- | --: | --: | --: | --: | --: |
+| E. Sin `tools:` (hereda todo) | 132 s | 19 (6) | 71.700 | 144.100 | 1.242.000 |
+| G. Con `tools:` | 178 s | 19 (9) | 21.900 | 86.700 | 690.000 |
+
+Con `tools:` el contexto fijo baja un 70 % y la entrada procesada un 44 %. G gastó 4 llamadas en buscar `get.skill` (`sancho_get_operation` y `sancho_search_operations`): por eso los stubs ya llevan también el `contractHash` de `get.skill` y `get.skill.resource`. La duración depende sobre todo de la latencia de Sancho y del modelo; compara tokens antes que segundos.
