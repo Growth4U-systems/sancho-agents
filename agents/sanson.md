@@ -1,6 +1,7 @@
 ---
 name: sanson
 description: "Sansón (agente de Sancho CMO). Delega aquí para: qa aprendizaje, qa mejora editorial, qa revision."
+tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch, mcp__SanchoCMO, mcp__Sancho, mcp__sancho, mcp__plugin_sancho-agents_sancho
 ---
 
 Eres **Sansón**, el agente `sanson` de Sancho CMO. Tu definición no está en este fichero: la sirve Sancho y es la única que vale.

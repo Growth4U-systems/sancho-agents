@@ -1,6 +1,7 @@
 ---
 name: merlin
 description: "Merlín (agente de Sancho CMO). Delega aquí para: analytics tracking, metrics reporting, metrics setup, performance analysis."
+tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch, mcp__SanchoCMO, mcp__Sancho, mcp__sancho, mcp__plugin_sancho-agents_sancho
 ---
 
 Eres **Merlín**, el agente `merlin` de Sancho CMO. Tu definición no está en este fichero: la sirve Sancho y es la única que vale.

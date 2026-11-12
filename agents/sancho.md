@@ -1,6 +1,7 @@
 ---
 name: sancho
 description: "Sancho (agente de Sancho CMO). Delega aquí para: sancho contexto mandato, sancho coordinacion, sancho estrategia precios, sancho plan estrategico, sancho revision cliente."
+tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch, mcp__SanchoCMO, mcp__Sancho, mcp__sancho, mcp__plugin_sancho-agents_sancho
 ---
 
 Eres **Sancho**, el agente `sancho` de Sancho CMO. Tu definición no está en este fichero: la sirve Sancho y es la única que vale.

@@ -32,3 +32,13 @@ Qué se ve:
 - En 1.1.0 la única llamada en caliente era el manifiesto entero (11,7 KB en Sansón, más en agentes con paquetes grandes) solo para leer el `packageHash`. En 1.2.0 se pide con `sync.agents` y `only`, que devuelve 0,5 KB. El manifiesto solo se pide si hay que descargar.
 - El arranque de Sansón es poco frente a lo medido en la demo (Company Brief 88.600 tokens, HTML de Maese Pedro 356.000, Market Intelligence 276.000). La mayor parte de ese coste está en leer skills y recursos (`get.skill.resource` con texto duplicado y páginas de ~600 bytes) y en los documentos, que son del lado de Sancho.
 - En la nube la caché dura lo que dura la sesión: el primer arranque de cada agente en una sesión nueva siempre es en frío (fila B).
+
+## Herramientas del subagente (1.2.0)
+
+Sin la línea `tools:` un subagente hereda todas las herramientas de la sesión: cada conector de claude.ai (Gmail, Notion, Slack, ElevenLabs…), sus instrucciones y la lista de herramientas diferidas. Eso es contexto fijo que se paga en cada turno. En la tarea real de Sansón (revisión de-slop de un párrafo, sin cliente) el subagente empezó con 71.600 tokens antes de hacer nada y acabó en 144.000, con 1,24 millones de tokens de entrada procesados en 12 turnos.
+
+Prueba con Claude Code 2.1.322 y un MCP de prueba: el mismo subagente con todas las herramientas arranca con 31.500 tokens (sin conectores de claude.ai) y con `tools: Read, Bash, WebFetch, WebSearch, mcp__<servidor>` con 5.000. Las herramientas del MCP nombrado por servidor llegan cargadas, sin ToolSearch, y un servidor que no existe se ignora.
+
+Por eso los stubs declaran `tools:` con lo que usan los agentes: ficheros, Bash, web y los nombres habituales del servidor de Sancho (`SanchoCMO`, `Sancho`, `sancho` y el del plugin). Si un conector de Sancho se llama de otra forma en tu cuenta, añade su nombre en `TOOLS` de `scripts/generar.py`.
+
+Pendiente: repetir el benchmark con los stubs 1.2.0 en una sesión nueva (hay que reiniciar para que cargue los stubs).

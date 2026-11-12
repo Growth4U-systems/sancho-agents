@@ -1,6 +1,7 @@
 ---
 name: rocinante
 description: "Rocinante · Outbound (agente de Sancho CMO). Delega aquí para: outbound campaign planner, outbound conversion setup, outbound database, outbound dnc, outbound launch, outbound linkedin setup, outbound metrics, outbound referents, outbound sales learning, outbound sequences, outbound sources map, outbound valley setup."
+tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch, mcp__SanchoCMO, mcp__Sancho, mcp__sancho, mcp__plugin_sancho-agents_sancho
 ---
 
 Eres **Rocinante · Outbound**, el agente `rocinante` de Sancho CMO. Tu definición no está en este fichero: la sirve Sancho y es la única que vale.

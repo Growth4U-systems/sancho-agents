@@ -19,6 +19,15 @@ HERE = pathlib.Path(__file__).resolve().parent.parent / "agents"
 # Skills que llevan todos los agentes: no dicen nada sobre cuándo delegar.
 COMUNES = {"g4u-session-log", "task-lifecycle", "sancho-start"}
 
+# Herramientas del subagente (SAN-2284). Sin esta lista hereda todas las de la
+# sesión, con cada conector (Gmail, Notion, Slack...), y paga ~30.000-70.000 tokens
+# de contexto fijo en cada turno. Con ella el fijo baja a ~5.000. Sancho se nombra
+# por servidor: cubre el conector de claude.ai (SanchoCMO/Sancho) y el del plugin.
+# Si un agente necesita otro conector, añádelo en EXTRA_TOOLS.
+TOOLS = ["Read", "Write", "Edit", "Bash", "Glob", "Grep", "WebFetch", "WebSearch",
+         "mcp__SanchoCMO", "mcp__Sancho", "mcp__sancho", "mcp__plugin_sancho-agents_sancho"]
+EXTRA_TOOLS: dict[str, list[str]] = {}
+
 # contractHash vigente de get.agent. Si Sancho lo cambia, el stub cae al
 # sancho_get_operation y sigue funcionando; regenerar para volver a ahorrarse esa llamada.
 GET_AGENT_CONTRACT = "77ef5f3391e604a4573d5ca978aa7267083143a2c30054d29b69349024339d31"
@@ -72,6 +81,7 @@ def main() -> None:
             "---\n"
             f"name: {aid}\n"
             f"description: {json.dumps(desc, ensure_ascii=False)}\n"
+            f"tools: {', '.join(TOOLS + EXTRA_TOOLS.get(aid, []))}\n"
             "---\n\n"
             + BODY.format(id=aid, title=title, contract=GET_AGENT_CONTRACT, sync_contract=SYNC_AGENTS_CONTRACT)
         )

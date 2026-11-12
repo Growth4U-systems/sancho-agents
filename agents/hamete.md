@@ -1,6 +1,7 @@
 ---
 name: hamete
 description: "Hamete (agente de Sancho CMO). Delega aquí para: research company brief, research foundation, research investigation, research market monitoring, research niche discovery, research positioning, research trust score."
+tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch, mcp__SanchoCMO, mcp__Sancho, mcp__sancho, mcp__plugin_sancho-agents_sancho
 ---
 
 Eres **Hamete**, el agente `hamete` de Sancho CMO. Tu definición no está en este fichero: la sirve Sancho y es la única que vale.

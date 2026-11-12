@@ -1,6 +1,7 @@
 ---
 name: dulcinea
 description: "Dulcinea (agente de Sancho CMO). Delega aquí para: contenido estrategia, contenido medicion, contenido produccion, contenido publicacion, contenido setup."
+tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch, mcp__SanchoCMO, mcp__Sancho, mcp__sancho, mcp__plugin_sancho-agents_sancho
 ---
 
 Eres **Dulcinea**, el agente `dulcinea` de Sancho CMO. Tu definición no está en este fichero: la sirve Sancho y es la única que vale.

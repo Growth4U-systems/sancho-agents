@@ -54,7 +54,7 @@ def medir(path):
             for c in contenido:
                 if c.get("type") == "tool_result":
                     r = c.get("content")
-                    bytes_resultado += len(r if isinstance(r, str) else json.dumps(r, ensure_ascii=False))
+                    bytes_resultado += len((r if isinstance(r, str) else json.dumps(r, ensure_ascii=False)).encode("utf-8"))
     usos = list(vistos.values())
     entrada = lambda u: u.get("input_tokens", 0) + u.get("cache_read_input_tokens", 0) + u.get("cache_creation_input_tokens", 0)
     final = usos[-1] if usos else {}
