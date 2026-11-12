@@ -27,6 +27,7 @@ Para tenerlos en cualquier repo, añade esto al setup script del entorno:
 git clone --depth 1 https://github.com/Growth4U-systems/sancho-agents /tmp/sancho-agents || true
 mkdir -p ~/.claude/agents
 cp /tmp/sancho-agents/agents/*.md ~/.claude/agents/ || true
+mkdir -p ~/.claude/sancho-agents && cp /tmp/sancho-agents/scripts/sancho_cache.py ~/.claude/sancho-agents/ || true
 ```
 
 En ningún caso hace falta token: cada agente habla con Sancho a través de tu conector, así que solo ves los clientes a los que tienes acceso.
@@ -36,6 +37,8 @@ En ningún caso hace falta token: cada agente habla con Sancho a través de tu c
 Los ficheros de `agents/` **no llevan la definición del agente**. Al arrancar, cada agente la lee de Sancho (`get.agent`, formato portable) y sigue lo que dice su `AGENT.md`. Así siempre corre la revisión vigente: cuando Sancho cambia un agente, el cambio llega en el siguiente arranque sin tocar este repo.
 
 Si el conector de Sancho no está activo en la sesión, el agente se para y lo dice.
+
+**Caché local.** Sancho manda cada fichero del paquete en base64. Antes el agente lo descodificaba reescribiéndolo entero en un comando, en cada arranque. Ahora `scripts/sancho_cache.py` recoge lo que ya llegó, comprueba el sha256 de cada fichero contra el manifiesto y lo guarda en `~/.claude/sancho-cache/<agente>/<packageHash>/`. En el siguiente arranque, si el `packageHash` no ha cambiado, el agente lee de disco y no descarga nada: la copia verificada cuenta como lectura de Sancho (SAN-2008). Si Sancho publica una revisión nueva, cambia el hash y se descarga otra vez. En la nube la sesión empieza limpia, así que la caché solo dura esa sesión.
 
 Delega en un agente cada vez. Cada arranque lee varios ficheros de Sancho, y con muchos en paralelo Sancho no da abasto: en una prueba con 13 a la vez, las lecturas acabaron en timeout y la sesión del conector se cayó.
 
