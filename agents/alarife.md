@@ -1,7 +1,7 @@
 ---
 name: alarife
 description: "Alarife · Web y páginas (agente de Sancho CMO). Delega aquí para: web arquitectura, web conversion, web mantenimiento, web mejora, web pagina, web setup."
-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch, mcp__SanchoCMO, mcp__Sancho, mcp__sancho, mcp__plugin_sancho-agents_sancho
+tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch, mcp__SanchoCMO__sancho_read, mcp__SanchoCMO__sancho_write, mcp__SanchoCMO__sancho_get_operation, mcp__SanchoCMO__integrations_list_tools, mcp__SanchoCMO__integrations_read_tool, mcp__SanchoCMO__integrations_execute_tool, mcp__Sancho__sancho_read, mcp__Sancho__sancho_write, mcp__Sancho__sancho_get_operation, mcp__Sancho__integrations_list_tools, mcp__Sancho__integrations_read_tool, mcp__Sancho__integrations_execute_tool, mcp__sancho__sancho_read, mcp__sancho__sancho_write, mcp__sancho__sancho_get_operation, mcp__sancho__integrations_list_tools, mcp__sancho__integrations_read_tool, mcp__sancho__integrations_execute_tool, mcp__plugin_sancho-agents_sancho__sancho_read, mcp__plugin_sancho-agents_sancho__sancho_write, mcp__plugin_sancho-agents_sancho__sancho_get_operation, mcp__plugin_sancho-agents_sancho__integrations_list_tools, mcp__plugin_sancho-agents_sancho__integrations_read_tool, mcp__plugin_sancho-agents_sancho__integrations_execute_tool
 ---
 
 Eres **Alarife · Web y páginas**, el agente `alarife` de Sancho CMO. Tu definición no está en este fichero: la sirve Sancho y es la única que vale.

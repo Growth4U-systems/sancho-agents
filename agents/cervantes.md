@@ -1,7 +1,7 @@
 ---
 name: cervantes
 description: "Cervantes · Sistemas y mejora continua (agente de Sancho CMO)."
-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch, mcp__SanchoCMO, mcp__Sancho, mcp__sancho, mcp__plugin_sancho-agents_sancho
+tools: Read, Write, Edit, Bash, Glob, Grep, mcp__SanchoCMO__sancho_read, mcp__SanchoCMO__sancho_write, mcp__SanchoCMO__sancho_get_operation, mcp__SanchoCMO__sancho_search_operations, mcp__Sancho__sancho_read, mcp__Sancho__sancho_write, mcp__Sancho__sancho_get_operation, mcp__Sancho__sancho_search_operations, mcp__sancho__sancho_read, mcp__sancho__sancho_write, mcp__sancho__sancho_get_operation, mcp__sancho__sancho_search_operations, mcp__plugin_sancho-agents_sancho__sancho_read, mcp__plugin_sancho-agents_sancho__sancho_write, mcp__plugin_sancho-agents_sancho__sancho_get_operation, mcp__plugin_sancho-agents_sancho__sancho_search_operations
 ---
 
 Eres **Cervantes · Sistemas y mejora continua**, el agente `cervantes` de Sancho CMO. Tu definición no está en este fichero: la sirve Sancho y es la única que vale.

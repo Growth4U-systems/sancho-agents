@@ -39,7 +39,7 @@ Sin la línea `tools:` un subagente hereda todas las herramientas de la sesión:
 
 Prueba con Claude Code 2.1.322 y un MCP de prueba: el mismo subagente con todas las herramientas arranca con 31.500 tokens (sin conectores de claude.ai) y con `tools: Read, Bash, WebFetch, WebSearch, mcp__<servidor>` con 5.000. Las herramientas del MCP nombrado por servidor llegan cargadas, sin ToolSearch, y un servidor que no existe se ignora.
 
-Por eso los stubs declaran `tools:` con lo que usan los agentes: ficheros, Bash, web y los nombres habituales del servidor de Sancho (`SanchoCMO`, `Sancho`, `sancho` y el del plugin). Si un conector de Sancho se llama de otra forma en tu cuenta, añade su nombre en `TOOLS` de `scripts/generar.py`.
+Nombrar el servidor de Sancho entero carga sus 13 herramientas (~12.000 tokens). Desde 1.3.0 cada stub declara solo las herramientas de Sancho que cita la definición de su agente, por nombre exacto y con los cuatro nombres de servidor habituales (`SanchoCMO`, `Sancho`, `sancho` y el del plugin); los que no existen se ignoran. La web solo va en los agentes que investigan. El mapa está en `POR_AGENTE` de `scripts/generar.py`: si un agente necesita una herramienta que no tiene, se añade ahí.
 
 ### Tarea real: Sansón, de-slop de un párrafo (12-nov-2026)
 
@@ -53,5 +53,6 @@ Las dos con la caché de arranque llena (4 ficheros) y los ficheros del método 
 | -- | --: | --: | --: | --: | --: |
 | E. Sin `tools:` (hereda todo) | 132 s | 19 (6) | 71.700 | 144.100 | 1.242.000 |
 | G. Con `tools:` | 178 s | 19 (9) | 21.900 | 86.700 | 690.000 |
+| H. Con `tools:` y contratos de `get.skill` en el stub | 112 s | 13 (5) | 25.000 | 80.100 | 328.000 |
 
-Con `tools:` el contexto fijo baja un 70 % y la entrada procesada un 44 %. G gastó 4 llamadas en buscar `get.skill` (`sancho_get_operation` y `sancho_search_operations`): por eso los stubs ya llevan también el `contractHash` de `get.skill` y `get.skill.resource`. La duración depende sobre todo de la latencia de Sancho y del modelo; compara tokens antes que segundos.
+Con `tools:` el contexto fijo baja un 70 % y la entrada procesada un 44 %. G gastó 4 llamadas en buscar `get.skill` (`sancho_get_operation` y `sancho_search_operations`): por eso los stubs ya llevan también el `contractHash` de `get.skill` y `get.skill.resource`. H es la misma tarea con los contratos ya en el stub: 7 turnos en vez de 12 y menos de la mitad de entrada procesada. H aún cargaba las 13 herramientas de Sancho. La duración depende sobre todo de la latencia de Sancho y del modelo; compara tokens antes que segundos.
