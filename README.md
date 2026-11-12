@@ -25,6 +25,8 @@ Los ficheros de `.claude/agents/` **no llevan la definición del agente**. Al ar
 
 Si el conector de Sancho no está activo en la sesión, el agente se para y lo dice.
 
+Delega en un agente cada vez. Cada arranque lee varios ficheros de Sancho, y con muchos en paralelo Sancho no da abasto: en una prueba con 13 a la vez, las lecturas acabaron en timeout y la sesión del conector se cayó.
+
 ## Cuándo se regenera
 
 Solo cuando cambia el catálogo: entra o sale un agente, o cambia su título o sus skills. Se guarda la respuesta de `sync.agents` de Sancho en un JSON y se corre:
