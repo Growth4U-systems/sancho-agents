@@ -93,6 +93,57 @@ Si el MCP de Sancho no está conectado en esta sesión, para y dilo: sin tu defi
 """
 
 
+# SAN-2284: con el paquete copiado en paquetes/<id>/ el stub lleva dentro los
+# ficheros de arranque y el agente arranca sin llamar a Sancho.
+PAQUETES = pathlib.Path(__file__).resolve().parent.parent / "paquetes"
+ARRANQUE = ["AGENT.md", "skills/agent-operation/SKILL.md", "context.md", "workflows.md"]
+
+PAQUETE_BODY = """Eres **{title}**, el agente `{id}` de Sancho CMO.
+
+Abajo va tu definición vigente, copiada de Sancho: paquete `{id}`, revisión {revision}, `packageHash` `{phash}`, sincronizada el {fecha}. Es una copia verificada por sha256 y cuenta como lectura de Sancho (SAN-2008), así que no la pidas otra vez. Ya tienes aquí `AGENT.md`, `skills/agent-operation/SKILL.md`, `context.md` y `workflows.md`: no los leas.
+
+## Tus ficheros
+
+El resto del paquete está en la carpeta `paquetes/{id}/` del repo sancho-agents: skills, recursos, `agents/_shared/` y `skills/manifest.json`. Para encontrarla, corre una vez en Bash `find / -path '*/paquetes/{id}/.sync.json' -not -path '/proc/*' 2>/dev/null | head -1` y quédate con su carpeta. Lee de ahí con Read solo lo que tu definición o el encargo pidan, cuando haga falta. Las skills y sus recursos se leen de ahí, no de Sancho; `skills/manifest.json` solo cuando tengas que elegir skill, y para en cuanto encuentres la que buscas. Una skill asignada solo a un cliente puede no estar en el repo: esa sí se pide a Sancho con `get.skill`.
+
+## Si Sancho dice que tu versión ya no vale
+
+Si al arrancar un run o al usar una skill Sancho responde que el paquete o la publicación cambió (`agent_package_changed_restart`, un 409 o un pin distinto), esta copia está atrasada. Pide el paquete vigente: `sancho_read` con `resource: "paquetes"`, `operationId: "sync.agents"`, `contractHash: "{sync_contract}"` y `arguments: {{"only": ["{id}"]}}` para el `packageHash`; luego `get.agent` (`contractHash: "{contract}"`) con `{{"agentId": "{id}", "format": "portable", "packageHash": "<hash>", "resourcePath": "<ruta>", "encoding": "utf8"}}` para cada fichero que necesites. Sancho actualiza el repo solo en unos minutos.
+
+## Reglas que no dependen de la definición
+
+- Nunca envíes nada a un cliente ni fuera del proyecto sin enseñar antes el borrador exacto y tener el ok explícito a ese texto.
+- Aceptar una propuesta o completar una tarea en Sancho exige una decisión humana verificable; tu relato no la acredita.
+- No actives `schedules.json` ni lances herramientas de pago, publicación o ejecución sin autorización expresa.
+
+{ficheros}"""
+
+
+def _stub(aid: str, title: str, skills: list, paquete: dict | None = None) -> str:
+    tareas = [humanize(s) for s in skills if s not in COMUNES]
+    desc = f"{title} (agente de Sancho CMO). Delega aquí para: {', '.join(tareas)}." if tareas else f"{title} (agente de Sancho CMO)."
+    cabecera = ("---\n" f"name: {aid}\n" f"description: {json.dumps(desc, ensure_ascii=False)}\n"
+                f"tools: {herramientas(aid)}\n" "---\n\n")
+    if paquete is None:
+        return cabecera + BODY.format(id=aid, title=title, contract=GET_AGENT_CONTRACT, sync_contract=SYNC_AGENTS_CONTRACT,
+                                      skill_contract=GET_SKILL_CONTRACT, resource_contract=GET_SKILL_RESOURCE_CONTRACT)
+    carpeta = PAQUETES / aid
+    ficheros = "\n\n".join(f"## Fichero `{ruta}`\n\n{(carpeta / ruta).read_text()}" for ruta in ARRANQUE if (carpeta / ruta).exists())
+    return cabecera + PAQUETE_BODY.format(id=aid, title=title, revision=paquete.get("revision"), phash=paquete["packageHash"],
+                                          fecha=paquete.get("sincronizado"), contract=GET_AGENT_CONTRACT,
+                                          sync_contract=SYNC_AGENTS_CONTRACT, ficheros=ficheros)
+
+
+def desde_paquetes() -> None:
+    """Regenera los stubs de los agentes que tienen paquete en paquetes/."""
+    n = 0
+    for f in sorted(PAQUETES.glob("*/.sync.json")):
+        p = json.loads(f.read_text())
+        (HERE / f"{p['id']}.md").write_text(_stub(p["id"], p.get("title") or p["id"], p.get("skills", []), p))
+        n += 1
+    print(f"{n} stubs generados desde paquetes/")
+
+
 def humanize(skill: str) -> str:
     if skill.startswith("san-"):
         skill = skill[4:]  # san-<área>-<tarea> -> <área> <tarea>
@@ -100,6 +151,8 @@ def humanize(skill: str) -> str:
 
 
 def main() -> None:
+    if len(sys.argv) > 1 and sys.argv[1] == "--paquetes":
+        return desde_paquetes()
     src = open(sys.argv[1]) if len(sys.argv) > 1 else sys.stdin
     data = json.load(src)
     agents = data.get("agents") or []
@@ -108,18 +161,9 @@ def main() -> None:
     wanted = set()
     for a in agents:
         aid, title = a["id"], a.get("title") or a["id"]
-        tareas = [humanize(s) for s in a.get("skills", []) if s not in COMUNES]
-        desc = f"{title} (agente de Sancho CMO). Delega aquí para: {', '.join(tareas)}." if tareas else f"{title} (agente de Sancho CMO)."
-        text = (
-            "---\n"
-            f"name: {aid}\n"
-            f"description: {json.dumps(desc, ensure_ascii=False)}\n"
-            f"tools: {herramientas(aid)}\n"
-            "---\n\n"
-            + BODY.format(id=aid, title=title, contract=GET_AGENT_CONTRACT, sync_contract=SYNC_AGENTS_CONTRACT,
-                          skill_contract=GET_SKILL_CONTRACT, resource_contract=GET_SKILL_RESOURCE_CONTRACT)
-        )
-        (HERE / f"{aid}.md").write_text(text)
+        paquete = PAQUETES / aid / ".sync.json"
+        datos = json.loads(paquete.read_text()) if paquete.exists() else None
+        (HERE / f"{aid}.md").write_text(_stub(aid, title, a.get("skills", []), datos))
         wanted.add(f"{aid}.md")
     # Agentes retirados del catálogo: fuera.
     for f in HERE.glob("*.md"):

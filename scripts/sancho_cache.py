@@ -34,7 +34,7 @@ def _objetos(valor):
     while pila:
         v = pila.pop()
         if isinstance(v, dict):
-            if "packageHash" in v and ("files" in v or "file" in v):
+            if "packageHash" in v and ("files" in v or "file" in v or "resources" in v):
                 yield v
             pila.extend(v.values())
         elif isinstance(v, list):
@@ -76,12 +76,16 @@ def _recoger(agent, phash):
                 continue
             for f in o.get("files") or []:
                 manifiesto[f["path"]] = f
-            f = o.get("file")
-            if isinstance(f, dict) and f.get("contentBase64") is not None:
-                partes.setdefault(f["path"], {})[int(f.get("offset") or 0)] = f["contentBase64"]
-            elif isinstance(f, dict) and f.get("encoding") == "utf8" and isinstance(f.get("content"), str):
-                # get.agent con encoding=utf8 (SAN-2284): texto legible; offset sigue en bytes.
-                partes.setdefault(f["path"], {})[int(f.get("offset") or 0)] = base64.b64encode(f["content"].encode("utf-8")).decode()
+            # Una página suelta (resourcePath) o varias (resourcePaths, SAN-2284).
+            for f in [o.get("file")] + list(o.get("resources") or []):
+                if not isinstance(f, dict) or not f.get("sha256"):
+                    continue
+                manifiesto.setdefault(f["path"], {"path": f["path"], "sha256": f["sha256"], "bytes": f.get("bytes")})
+                if f.get("contentBase64") is not None:
+                    partes.setdefault(f["path"], {})[int(f.get("offset") or 0)] = f["contentBase64"]
+                elif f.get("encoding") == "utf8" and isinstance(f.get("content"), str) and f["content"]:
+                    # encoding=utf8: texto legible; offset sigue en bytes.
+                    partes.setdefault(f["path"], {})[int(f.get("offset") or 0)] = base64.b64encode(f["content"].encode("utf-8")).decode()
     return manifiesto, partes
 
 
@@ -103,13 +107,13 @@ def status(agent, phash):
 def save(agent, phash):
     manifiesto, partes = _recoger(agent, phash)
     d = _dir(agent, phash)
+    if (d / ".manifest.json").exists():
+        manifiesto = {**json.loads((d / ".manifest.json").read_text()), **manifiesto}
     if manifiesto:
         d.mkdir(parents=True, exist_ok=True)
         (d / ".manifest.json").write_text(json.dumps(manifiesto, ensure_ascii=False))
-    elif (d / ".manifest.json").exists():
-        manifiesto = json.loads((d / ".manifest.json").read_text())
     if not manifiesto:
-        print(f"ERROR: no encuentro el manifiesto de {agent} {phash[:12]} en los transcripts. Pide antes get.agent con offset 0.")
+        print(f"ERROR: no encuentro ficheros de {agent} {phash[:12]} en los transcripts. Pide antes get.agent con resourcePaths.")
         sys.exit(2)
     guardados, fallos = [], []
     for ruta, trozos in partes.items():
