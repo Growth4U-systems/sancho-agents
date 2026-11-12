@@ -38,7 +38,9 @@ Los ficheros de `agents/` **no llevan la definición del agente**. Al arrancar, 
 
 Si el conector de Sancho no está activo en la sesión, el agente se para y lo dice.
 
-**Caché local.** Sancho manda cada fichero del paquete en base64. Antes el agente lo descodificaba reescribiéndolo entero en un comando, en cada arranque. Ahora `scripts/sancho_cache.py` recoge lo que ya llegó, comprueba el sha256 de cada fichero contra el manifiesto y lo guarda en `~/.claude/sancho-cache/<agente>/<packageHash>/`. En el siguiente arranque, si el `packageHash` no ha cambiado, el agente lee de disco y no descarga nada: la copia verificada cuenta como lectura de Sancho (SAN-2008). Si Sancho publica una revisión nueva, cambia el hash y se descarga otra vez. En la nube la sesión empieza limpia, así que la caché solo dura esa sesión.
+**Caché local.** Sancho manda cada fichero del paquete en base64. Antes el agente lo descodificaba reescribiéndolo entero en un comando, en cada arranque. Ahora `scripts/sancho_cache.py` recoge lo que ya llegó, comprueba el sha256 de cada fichero contra el manifiesto y lo guarda en `~/.claude/sancho-cache/<agente>/<packageHash>/`. En cada arranque el agente pide solo el `packageHash` vigente (`sync.agents` con `only`, medio KB); si no ha cambiado, lee de disco y no descarga nada, ni siquiera el manifiesto: la copia verificada cuenta como lectura de Sancho (SAN-2008). Si Sancho publica una revisión nueva, cambia el hash y se descarga otra vez. En la nube la sesión empieza limpia, así que la caché solo dura esa sesión.
+
+**Medir.** `BENCHMARK.md` explica cómo medir el arranque con una tarea fija y trae los resultados de referencia; `python3 scripts/medir.py --ultimo` saca duración, llamadas y tokens del último subagente.
 
 Delega en un agente cada vez. Cada arranque lee varios ficheros de Sancho, y con muchos en paralelo Sancho no da abasto: en una prueba con 13 a la vez, las lecturas acabaron en timeout y la sesión del conector se cayó.
 
