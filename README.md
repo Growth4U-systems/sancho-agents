@@ -21,13 +21,15 @@ El plugin trae los 13 agentes y el conector de Sancho. Para recibir agentes nuev
 2. Abre una sesión nueva en [claude.ai/code](https://claude.ai/code) sobre este repo. Tiene que ser una sesión normal, no un Proyecto: los hilos de un Proyecto no cargan agentes.
 3. Activa el conector de Sancho en esa sesión.
 
-Para tenerlos en cualquier repo, añade esto al setup script del entorno:
+Para tenerlos en cualquier repo, añade esto al `.claude/settings.json` de ese repo; cada sesión abierta sobre él instala el plugin sola:
 
-```bash
-git clone --depth 1 https://github.com/Growth4U-systems/sancho-agents /tmp/sancho-agents || true
-mkdir -p ~/.claude/agents
-cp /tmp/sancho-agents/agents/*.md ~/.claude/agents/ || true
-mkdir -p ~/.claude/sancho-agents && cp /tmp/sancho-agents/scripts/sancho_cache.py ~/.claude/sancho-agents/ || true
+```json
+{
+  "extraKnownMarketplaces": {
+    "sancho-agents": { "source": { "source": "github", "repo": "Growth4U-systems/sancho-agents" } }
+  },
+  "enabledPlugins": { "sancho-agents@sancho-agents": true }
+}
 ```
 
 En ningún caso hace falta token: cada agente habla con Sancho a través de tu conector, así que solo ves los clientes a los que tienes acceso.
@@ -38,18 +40,20 @@ Los ficheros de `agents/` **no llevan la definición del agente**. Al arrancar, 
 
 Si el conector de Sancho no está activo en la sesión, el agente se para y lo dice.
 
-**Paquetes en el repo (SAN-2284).** `paquetes/<agente>/` guarda el paquete portable de cada agente tal como lo sirve Sancho: definición, skills y recursos, sin datos de clientes, con su `packageHash` en `.sync.json`. El stub de cada agente lleva dentro sus ficheros de arranque (`AGENT.md`, `agent-operation`, `context.md` y `workflows.md`), así que arranca sin llamar a Sancho y lee las skills de `paquetes/`. Los escribe Sancho: cuando cambia el paquete común de un agente, un job del servidor hace un commit en `main` con su carpeta (comprueba cada 30 minutos), y la Action `Regenerar stubs desde paquetes` rehace `agents/<agente>.md`. Instalar el plugin no pide ningún token; solo el servidor de Sancho guarda uno con permiso de escritura en este repo. Si Sancho publica algo nuevo entre dos comprobaciones, el agente lo detecta y baja lo que le falte como antes.
+**Paquetes en el repo (SAN-2284, SAN-2373).** `paquetes/<agente>/` guarda el paquete portable de cada agente tal como lo publica Sancho: definición, skills y recursos, sin datos de clientes, con su `packageHash` en `.sync.json`. El stub de cada agente lleva dentro sus ficheros de arranque (`AGENT.md`, `agent-operation`, `context.md` y `workflows.md`) y lee las skills de `paquetes/`. Al arrancar solo pide a Sancho el `packageHash` vigente (`sync.agents`, medio KB): si coincide, no descarga nada; si no, baja de Sancho lo que necesite y avisa de que hay que actualizar el plugin. Instalar el plugin no pide ningún token.
 
-**Caché local.** Sancho manda cada fichero del paquete en base64. Antes el agente lo descodificaba reescribiéndolo entero en un comando, en cada arranque. Ahora `scripts/sancho_cache.py` recoge lo que ya llegó, comprueba el sha256 de cada fichero contra el manifiesto y lo guarda en `~/.claude/sancho-cache/<agente>/<packageHash>/`. En cada arranque el agente pide solo el `packageHash` vigente (`sync.agents` con `only`, medio KB); si no ha cambiado, lee de disco y no descarga nada, ni siquiera el manifiesto: la copia verificada cuenta como lectura de Sancho (SAN-2008). Si Sancho publica una revisión nueva, cambia el hash y se descarga otra vez. En la nube la sesión empieza limpia, así que la caché solo dura esa sesión.
+**Caché local (stubs anteriores).** Hasta la primera exportación de paquetes, los stubs usan esta caché. Sancho manda cada fichero del paquete en base64. Antes el agente lo descodificaba reescribiéndolo entero en un comando, en cada arranque. Ahora `scripts/sancho_cache.py` recoge lo que ya llegó, comprueba el sha256 de cada fichero contra el manifiesto y lo guarda en `~/.claude/sancho-cache/<agente>/<packageHash>/`. En cada arranque el agente pide solo el `packageHash` vigente (`sync.agents` con `only`, medio KB); si no ha cambiado, lee de disco y no descarga nada, ni siquiera el manifiesto: la copia verificada cuenta como lectura de Sancho (SAN-2008). Si Sancho publica una revisión nueva, cambia el hash y se descarga otra vez. En la nube la sesión empieza limpia, así que la caché solo dura esa sesión.
 
 **Medir.** `BENCHMARK.md` explica cómo medir el arranque con una tarea fija y trae los resultados de referencia; `python3 scripts/medir.py --ultimo` saca duración, llamadas y tokens del último subagente.
 
 Delega en un agente cada vez. Cada arranque lee varios ficheros de Sancho, y con muchos en paralelo Sancho no da abasto: en una prueba con 13 a la vez, las lecturas acabaron en timeout y la sesión del conector se cayó.
 
-## Cuándo se regenera
+## Cómo se actualiza
 
-Solo cuando cambia el catálogo: entra o sale un agente, o cambia su título o sus skills. Se guarda la respuesta de `sync.agents` de Sancho en un JSON y se corre:
+`agents/`, `paquetes/` y los JSON del plugin los genera el script `plugin:update` del repo de Sancho (sanchocmo-mcp), desde lo publicado en Sancho; no se editan a mano. Con este repo clonado junto a sanchocmo-mcp y un token de Sancho (`agents:read`, `clients:read`):
 
 ```bash
-python3 scripts/generar.py sync.json
+SANCHO_MCP_URL=https://app.sanchocmo.ai/api/mcp/sancho SANCHO_MCP_TOKEN=... npm run plugin:update -- --out ../sancho-agents
 ```
+
+Solo baja los agentes cuyo `packageHash` cambió, verifica cada fichero por sha256 y sube la versión del plugin. Luego se hace commit aquí. `npm run plugin:check -- --out ../sancho-agents` comprueba sin red que el plugin coincide con sus paquetes.
