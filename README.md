@@ -21,15 +21,13 @@ El plugin trae los 13 agentes y el conector de Sancho. Para recibir agentes nuev
 2. Abre una sesión nueva en [claude.ai/code](https://claude.ai/code) sobre este repo. Tiene que ser una sesión normal, no un Proyecto: los hilos de un Proyecto no cargan agentes.
 3. Activa el conector de Sancho en esa sesión.
 
-Para tenerlos en cualquier repo, añade esto al `.claude/settings.json` de ese repo; cada sesión abierta sobre él instala el plugin sola:
+Para tenerlos en cualquier repo, añade esto al script de arranque del entorno. En la nube no instales el plugin: añadiría un segundo conector de Sancho con las mismas herramientas que el de tu cuenta, y más contexto en cada sesión.
 
-```json
-{
-  "extraKnownMarketplaces": {
-    "sancho-agents": { "source": { "source": "github", "repo": "Growth4U-systems/sancho-agents" } }
-  },
-  "enabledPlugins": { "sancho-agents@sancho-agents": true }
-}
+```bash
+git clone --depth 1 https://github.com/Growth4U-systems/sancho-agents /tmp/sancho-agents || true
+mkdir -p ~/.claude/agents ~/.claude/sancho-agents
+cp /tmp/sancho-agents/agents/*.md ~/.claude/agents/ || true
+cp /tmp/sancho-agents/scripts/sancho_cache.py ~/.claude/sancho-agents/ 2>/dev/null || true
 ```
 
 En ningún caso hace falta token: cada agente habla con Sancho a través de tu conector, así que solo ves los clientes a los que tienes acceso.
